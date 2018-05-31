@@ -1,0 +1,38 @@
+{
+  "gameCharpter" : [
+    {
+      "Case" : [
+        {
+          "HighScore" : 0,
+          "case" : 1,
+          "isLock" : false
+        },
+        {
+          "HighScore" : 0,
+          "case" : 2,
+          "isLock" : true
+        },
+        {
+          "HighScore" : 0,
+          "case" : 3,
+          "isLock" : true
+        },
+        {
+          "HighScore" : 0,
+          "case" : 4,
+          "isLock" : true
+        },
+        {
+          "HighScore" : 0,
+          "case" : 5,
+          "isLock" : true
+        },
+        {
+          "HighScore" : 0,
+          "case" : 6,
+          "isLock" : true
+        }
+      ]
+    }
+  ]
+}
