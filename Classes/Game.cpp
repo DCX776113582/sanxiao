@@ -7,25 +7,42 @@
 //
 
 #include "Game.hpp"
-Scene* Game::createScene()
+#include "GuanQia.hpp"
+Layer* Game::create(int chapter)//重写create，参数为章节数、关卡数
+{
+    Game* layer = new Game();//new出一个场景
+    //如果存在
+    if(layer && layer->init(chapter))
+    {
+        layer->autorelease();//自动释放池
+        return layer;//返回图层
+    }
+    CC_SAFE_DELETE(layer);
+    layer = nullptr;
+    return nullptr;
+}
+Scene* Game::createScene(int chapter)
 {
     auto scene = Scene::create();
-    auto layer = Game::create();
+    auto layer = Game::create(chapter);
     scene->addChild(layer);
     return scene;
 }
-bool Game::init()
+bool Game::init(int chapter)
 {
     if (!Layer::init())
     {
         return false;
     }
-    auto virableSize = Director::getInstance()->getVisibleSize();
-    auto bg = Sprite::create("bground1.png");
+    virableSize = Director::getInstance()->getVisibleSize();
+    _chapter = chapter;
+    _highscore = 0;
+    string str = StringUtils::format("bground%d.png",chapter);
+    auto bg = Sprite::create(str);
     bg->setAnchorPoint(Vec2(0, 0));
     bg->setPosition(Vec2(0, 0));
     
-    auto bg1 = Sprite::create("bground1.png");
+    auto bg1 = Sprite::create(str);
     bg1->setAnchorPoint(Vec2(0, 0));
     bg1->setPosition(Vec2(0, 0));
     this->addChild(bg);
@@ -66,13 +83,15 @@ bool Game::init()
     kuang->setVisible(false);
     kuang->setPosition(Vec2(0, 100));
     this->addChild(kuang,8);
-
-    score = Label::createWithSystemFont("score:0000","Marker Felt.ttf",30);
-    score->setColor(Color3B::YELLOW);
-    score->setAnchorPoint(Vec2(0,1));
-    score->setPosition(Vec2(0,virableSize.height));
-    bg1->addChild(score);
+    this->chushihua();
+    auto node1 = CSLoader::createNode("title.csb");
+    this->addChild(node1,300);
+    score = node1->getChildByName<Text*>("Text_4");
+    label = node1->getChildByName<Text*>("Text_2");
     sc = 0;
+    num = 0;num2 = 60;
+    HighScore = _highscore;
+
     return true;
 }
 bool Game:: jiancha()
@@ -159,8 +178,11 @@ void Game::fun_shanchu()
                  jihe[dd->getX()][dd->getY()]=nullptr;
                  dd->removeFromParentAndCleanup(true);
                 sc+=30;
-                string s1 = StringUtils::format("score:%4d",sc);
+                string s1 = StringUtils::format("%04d",sc);
                 score->setString(s1);
+                if (sc>=TargetScore) {
+                    this->win();
+                }
             });
             Sequence * seq;
             if (temp==shanchu.size()){
@@ -187,8 +209,11 @@ void Game::fun_shanchu1(){
                  jihe[dd->getX()][dd->getY()]=nullptr;
                  dd->removeFromParentAndCleanup(true);
                 sc+=30;
-                string s1 = StringUtils::format("score:%4d",sc);
+                string s1 = StringUtils::format("%04d",sc);
                 score->setString(s1);
+                if (sc>=TargetScore) {
+                    this->win();
+                }
             });
             Sequence * seq;
             if (temp==shanchu.size()){
@@ -253,8 +278,6 @@ void Game::buchong()
     auto seq = Sequence::create(act1,da,act2, NULL);
     this->runAction(seq);
 }
-
-
 void Game::onEnter()
 {
     
@@ -264,16 +287,151 @@ void Game::onEnter()
     touchListener->onTouchMoved = CC_CALLBACK_2(Game::onTouchMoved, this);
     touchListener->onTouchEnded = CC_CALLBACK_2(Game::onTouchEnded, this);
     touchListener->onTouchCancelled = CC_CALLBACK_2(Game::onTouchCancelled, this);
-    
+    this->schedule(schedule_selector(Game::updatetime),1);//调用时间调度器
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, this);
 }
 void Game::onExit()
 {
+    this->unschedule(schedule_selector(Game::updatetime));
+
     Director::getInstance()->getEventDispatcher()->removeEventListenersForTarget(this);
     Layer::onExit();
     
 }
+void Game::updatetime(float dt)
+{
+    num = 0;
+    if (num == 0) {
+        num2--;
+        if (num2 == 0) {
+            this->unschedule(schedule_selector(Game::updatetime));
+            this->lose();
+            log("you lose!");
+        }
+    }
+    string str = StringUtils::format("%02d:%02d",num,num2);
+    label->setString(str);
+}
+void Game::win(){
+    auto widget = Widget::create();//创建一个widget对象 ，类似于一个层
+    widget->setAnchorPoint(Vec2(0, 0));//设置锚点
+    widget->setPosition(Vec2(0, 0));//设置位置
+    widget->setContentSize(virableSize);//设置覆盖区域
+    widget->setTouchEnabled(true);//开启触摸
+    widget->setSwallowTouches(true);//吞噬触摸
+    this->addChild(widget,30);//添加子类——控件
+    node2 = CSLoader::createNode("Win.csb");
+    node2->setPosition(Vec2(virableSize.width/2,virableSize.height/2));
+    score1 = node2->getChildByName<Text*>("Text_1");
+    score1->setString(score->getString());
+    if (_highscore<sc) {
+        _highscore = sc;
+    }else{
+        _highscore = HighScore;
+    }
+    hinghscore = node2->getChildByName<Text*>("Text_3");//从节点获取最高分字符串
+    string str1 = StringUtils::format("%d",_highscore);//字符串包
+    hinghscore->setString(str1);//修改字符串
+    auto back = node2->getChildByName<Button*>("Button_3");
+    back->addClickEventListener([=](Ref*sender){
+        auto scene = xuanguan::createScene();
+        auto tran = TransitionCrossFade::create(1,scene);
+        Director::getInstance()->replaceScene(tran);
+    });
+    auto close = node2->getChildByName<Button*>("Button_1");
+    close->addClickEventListener([=](Ref*sender){
+        widget->removeFromParentAndCleanup(true);
+    });
+    if (_chapter<6) {
+        auto continued = node2->getChildByName<Button*>("Button_2");
+        continued->addClickEventListener([=](Ref*Sender){
+            auto scene = Game::createScene(_chapter+1);
+            auto tran = TransitionCrossFade::create(1,scene);
+            Director::getInstance()->replaceScene(tran);
+        });
 
+    }
+    widget->addChild(node2);
+    parseJSon();
+}
+void Game::lose(){
+    auto widget = Widget::create();//创建一个widget对象 ，类似于一个层
+    widget->setAnchorPoint(Vec2(0, 0));//设置锚点
+    widget->setPosition(Vec2(0, 0));//设置位置
+    widget->setContentSize(virableSize);//设置覆盖区域
+    widget->setTouchEnabled(true);//开启触摸
+    widget->setSwallowTouches(true);//吞噬触摸
+    this->addChild(widget,300);//添加子类——控件
+
+    auto node = CSLoader::createNode("Lose.csb");
+    node->setPosition(Vec2(virableSize.width/2,virableSize.height/2));
+    widget->addChild(node);
+    auto btn1 = node->getChildByName<Button*>("Button_1");
+    btn1->addClickEventListener([=](Ref*sender){
+        auto scene = Game::createScene(_chapter);
+        auto tran = TransitionCrossFade::create(1,scene);
+        Director::getInstance()->replaceScene(tran);
+    });
+    auto btn2 = node->getChildByName<Button*>("Button_2");
+    btn2->addClickEventListener([=](Ref*sender){
+        auto scene = xuanguan::createScene();
+        auto tran = TransitionCrossFade::create(1,scene);
+        Director::getInstance()->replaceScene(tran);
+    });
+
+}
+void Game::parseJSon()//解析文件——修改
+{
+    string path = FileUtils::getInstance()->getWritablePath();
+    //获取可读写路径下面charpter.json文件内容
+    string jsonPath = path+string("charpter1.json");
+    //拼接路径
+    cout<<jsonPath<<endl;
+    string data = FileUtils::getInstance()->getStringFromFile(jsonPath);
+    cout<<data<<endl;
+    //解析
+    Document doc;//定义文件
+    if (doc.HasParseError())//如果解析错误
+    {
+        log("json error!\n");//输出提示
+        return;//返回
+    }
+
+    doc.Parse<kParseDefaultFlags>(data.c_str());
+        //设置下一关开启
+    cout<<_chapter<<endl;
+    for (int i = 0;i<doc["gameCharpter"].Size(); ++i) {
+        doc["gameCharpter"][i]["Case"][_chapter]["isLock"].SetBool(true);
+        doc["gameCharpter"][i]["Case"][_chapter]["HighScore"].SetInt(_highscore);//设置最高分
+    }
+//        doc["gameCharpter"]["Case"][_chapter]["isLock"].SetBool(true);
+//        doc["gameCharpter"]["Case"][_chapter]["HighScore"].SetInt(_highscore);//设置最高分
+    //保存
+    StringBuffer buffer;//定义字符串缓冲区
+    rapidjson::Writer<rapidjson::StringBuffer>writer(buffer);//可写字符串缓冲区
+    doc.Accept(writer);//写入数据
+    FILE*file = fopen(jsonPath.c_str(), "wb");//打开文件
+    if (file) {
+        fputs(buffer.GetString(),file);//输出到文件
+        fclose(file);//关闭文件
+    }
+
+}
+void Game::chushihua()//初始化
+{
+    string path = FileUtils::getInstance()->getWritablePath();
+    //获取可读写路径下面charpter.json文件内容
+    string jsonPath = path+string("charpter1.json");
+    //拼接路径
+    string data = FileUtils::getInstance()->getStringFromFile(jsonPath);
+    //解析
+    Document doc;//定义文件
+    doc.Parse<kParseDefaultFlags>(data.c_str());
+    for (int i = 0; i<doc["gameCharpter"].Size(); ++i) {
+        _highscore = doc["gameCharpter"][i]["Case"][_chapter-1]["HighScore"].GetInt();//获取最高分
+        TargetScore = doc["gameCharpter"][i]["Case"][_chapter-1]["score"].GetInt();//获取最高分
+    }
+}
 bool Game::onTouchBegan(Touch * touch,Event * unused_event){
     if (zhuangtai == false){
         for (int i = 0; i<8; i++){
@@ -350,7 +508,7 @@ bool Game::onTouchBegan(Touch * touch,Event * unused_event){
 }
 void Game::onTouchMoved(Touch * touch,Event * unused_event)
 {
-
+log("touch onTouchMoved\n");
 }
 void Game::onTouchEnded(Touch * touch,Event * unused_event)
 {
