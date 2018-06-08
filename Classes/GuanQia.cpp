@@ -7,6 +7,7 @@
 //
 
 #include "GuanQia.hpp"
+#include "StartScene.hpp"
 //using namespace cocos2d::ui;
 //using namespace std;
 //USING_NS_CC;
@@ -23,127 +24,178 @@ bool xuanguan::init()
     {
         return false;
     }
-    
+    SimpleAudioEngine::getInstance()->playBackgroundMusic("bgm.mp3");
+    auto userDefault = UserDefault::getInstance();
+    userDefault->setBoolForKey("bool", true);
+    userDefault->setIntegerForKey("www", 5);
+
+
+    Jsonjiexi();
     auto node = CSLoader::createNode("Layer3.csb");
     this->addChild(node);
-//    chushihua();
+    virableSize = Director::getInstance()->getVisibleSize();
+    auto Bt1 = node->getChildByName<Button*>("Button_15");
+    Bt1->addClickEventListener([=](Ref*sender){
+        auto widget = Widget::create();
+        widget->setAnchorPoint(Vec2(0, 0));//设置锚点
+        widget->setPosition(Vec2(0, 0));//设置位置
+        widget->setContentSize(virableSize);
+        widget->setTouchEnabled(true);
+        widget->setSwallowTouches(true);
+        this->addChild(widget);
+
+        auto node1 = CSLoader::createNode("Node.csb");
+        node1->setPosition(Vec2(virableSize.width/2,virableSize.height/2));
+        widget->addChild(node1,5);
+
+        auto slider1 = node1->getChildByName<Slider*>("Slider_1");//创建滑动器
+        slider1->setMaxPercent(10);//设置最大百分比
+        slider1->setPercent(userDefault->getIntegerForKey("www"));
+        slider1->setEnabled(true);//滑动器禁用
+        //        userDefault->setBoolForKey("bool",true);
+        //添加事件监听器，参数为Ref*，滑动器::事件类型
+        slider1->addEventListener([=](Ref*sender,Slider::EventType type){
+            //如果类型==滑动器类型：：在百分比变化
+            if (type == Slider::EventType::ON_PERCENTAGE_CHANGED) {
+                //将Ref*动态转换为Slider*
+                Slider*slider = dynamic_cast<Slider*>(sender);
+                userDefault->setBoolForKey("bool", true);
+                int percent = slider->getPercent();//获取滑动器的百分比
+                int maxPercent = slider->getMaxPercent();//获取滑动器的最大百分比
+                //简单的音频引擎::获取实例-》设置音效大小（音量大小0——1）
+                SimpleAudioEngine::getInstance()->setEffectsVolume((percent++)*0.1);
+                log("Percent %f",10.0*percent/maxPercent);//输出
+            }
+            userDefault->setIntegerForKey("www", slider1->getPercent());
+        });
+
+        auto checkBox1 = node1->getChildByName<CheckBox*>("CheckBox_1");
+        checkBox1->setSelected(userDefault->getBoolForKey("bool"));
+        //添加事件监听器，参数为Ref*，复选框::事件类型
+        checkBox1->addEventListener([=](Ref*sender,CheckBox::EventType type){
+            switch (type) {
+                case CheckBox::EventType::SELECTED://复选框事件类型：选中
+                    slider1->setEnabled(true);//滑动器可用
+                    SimpleAudioEngine::getInstance()->resumeBackgroundMusic();
+                    break;//跳出switch
+                case CheckBox::EventType::UNSELECTED://复选框事件类型：没选中
+                    slider1->setEnabled(false);//滑动器禁用
+                    SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
+                    //
+                    break;//跳出switch
+                default:
+                    break;//跳出switch
+            }
+            userDefault->setBoolForKey("bool", checkBox1->isSelected());
+        });
+        auto Bt2 = node1->getChildByName<Button*>("Button_1");
+        Bt2->addClickEventListener([=](Ref*sender){
+            widget->removeFromParentAndCleanup(true);
+        });
+        
+    });
+    auto back = node->getChildByName<Button*>("Button_16");
+    back->addClickEventListener([=](Ref*sender){
+        auto scene = Start::createScene();//创建章节场景
+        auto trans = TransitionFlipX::create(2, scene);//跳转动作
+        Director::getInstance()->replaceScene(trans);//跳转场景
+    });
     auto list = node->getChildByName<cocos2d::ui::ScrollView*>("ScrollView_1");
-    auto bt1 = list->cocos2d::Node::getChildByName<Button*>("Button_0");
-    auto bt2 = list->cocos2d::Node::getChildByName<Button*>("Button_1");
-    auto bt3 = list->cocos2d::Node::getChildByName<Button*>("Button_2");
-    auto bt4 = list->cocos2d::Node::getChildByName<Button*>("Button_3");
-    auto bt5 = list->cocos2d::Node::getChildByName<Button*>("Button_4");
-    auto bt6 = list->cocos2d::Node::getChildByName<Button*>("Button_4_6");
-    bt1->setEnabled(!islock1);
-    bt2->setEnabled(!islock2);
-    bt3->setEnabled(!islock3);
-    bt4->setEnabled(!islock4);
-    bt5->setEnabled(!islock5);
-    bt6->setEnabled(!islock6);
-
-    bt1->addClickEventListener([](Ref*sender){
-        auto scene = Game::createScene();//创建章节场景
-        auto trans = TransitionFlipX::create(2, scene);//跳转动作
-        Director::getInstance()->replaceScene(trans);//跳转场景
-    });
-    bt2->addClickEventListener([](Ref*sender){
-        auto scene = Game::createScene();//创建章节场景
-        auto trans = TransitionFlipX::create(2, scene);//跳转动作
-        Director::getInstance()->replaceScene(trans);//跳转场景
-    });
-    bt3->addClickEventListener([](Ref*sender){
-        auto scene = Game::createScene();//创建章节场景
-        auto trans = TransitionFlipX::create(2, scene);//跳转动作
-        Director::getInstance()->replaceScene(trans);//跳转场景
-    });
-    bt4->addClickEventListener([](Ref*sender){
-        auto scene = Game::createScene();//创建章节场景
-        auto trans = TransitionFlipX::create(2, scene);//跳转动作
-        Director::getInstance()->replaceScene(trans);//跳转场景
-    });
-    bt5->addClickEventListener([](Ref*sender){
-        auto scene = Game::createScene();//创建章节场景
-        auto trans = TransitionFlipX::create(2, scene);//跳转动作
-        Director::getInstance()->replaceScene(trans);//跳转场景
-    });
-    bt6->addClickEventListener([](Ref*sender){
-        auto scene = Game::createScene();//创建章节场景
-        auto trans = TransitionFlipX::create(2, scene);//跳转动作
-        Director::getInstance()->replaceScene(trans);//跳转场景
-    });
-
-
-    
+    for (int i = 1; i<=6; ++i) {
+        string str = StringUtils::format("Button_%d",i-1);
+        auto bt1 = list->cocos2d::Node::getChildByName<Button*>(str);
+        bt1->setEnabled(!islock[i-1]);
+        bt1->addClickEventListener([=](Ref*sender){
+            this->ChooseModule(i);
+        });
+        cout<<!islock[i-1]<<endl;
+    }
     return true;
 }
-//初始化
-/*void xuanguan::chushihua()
+void xuanguan::ChooseModule(int chapter)
+{
+    auto widget = Widget::create();//创建一个widget对象 ，类似于一个层
+    widget->setAnchorPoint(Vec2(0, 0));//设置锚点
+    widget->setPosition(Vec2(0, 0));//设置位置
+    widget->setContentSize(virableSize);//设置覆盖区域
+    widget->setTouchEnabled(true);//开启触摸
+    widget->setSwallowTouches(true);//吞噬触摸
+    this->addChild(widget,30);//添加子类——控件
+    auto node = CSLoader::createNode("Module.csb");
+    node->setPosition(Vec2(virableSize.width/2,virableSize.height/2));
+    widget->addChild(node);
+    auto btnn1 = node->getChildByName<Button*>("Button_1");
+    btnn1->addClickEventListener([=](Ref*sender){
+        auto seq = Sequence::create(CallFunc::create([=](){
+            widget->removeFromParentAndCleanup(true);
+        }),CallFunc::create([=](){
+            auto scene = Game::createScene(chapter,1);//创建章节场景
+            auto trans = TransitionFlipX::create(2, scene);//跳转动作
+            Director::getInstance()->replaceScene(trans);//跳转场景
+        }),NULL);
+        widget->runAction(seq);
+    });
+    auto btn2 = node->getChildByName<Button*>("Button_2");
+    btn2->addClickEventListener([=](Ref*sender){
+        auto seq = Sequence::create(CallFunc::create([=](){
+            widget->removeFromParentAndCleanup(true);
+        }),CallFunc::create([=](){
+            auto scene = Game::createScene(chapter,2);//创建章节场景
+            auto trans = TransitionFlipX::create(2, scene);//跳转动作
+            Director::getInstance()->replaceScene(trans);//跳转场景
+            cout<<"跳转场景"<<endl;
+        }),NULL);
+        widget->runAction(seq);
+    });
+    auto btn3 = node->getChildByName<Button*>("Button_3");
+    btn3->addClickEventListener([=](Ref*Sender){
+        widget->removeFromParentAndCleanup(true);
+    });
+}
+void xuanguan::fileCopy()//文件拷贝
 {
     string path = FileUtils::getInstance()->getWritablePath();
-    //获取可读写路径下面charpter.json文件内容
+    //获取可读写路径
     string jsonPath = path+string("charpter1.json");
     //拼接路径
-    string data = FileUtils::getInstance()->fullPathForFilename("charpter1.json");
-    if (!FileUtils::getInstance()->isFileExist(jsonPath))
-    {
-        string filecon = FileUtils::getInstance()->getStringFromFile(data);
-        FILE*file = fopen(jsonPath.c_str(), "w");
-        if (file)
-        {
-            fputs(filecon.c_str(), file);
-            
-            fclose(file);
+    cout<<"可读写文件路径："<<jsonPath<<endl;
+    //获取Resource里的chapter.json的路径
+    string path2 = FileUtils::getInstance()->fullPathForFilename("charpter1.json");
+    //保存
+    if (!FileUtils::getInstance()->isFileExist(jsonPath)) {
+        string filecontents = FileUtils::getInstance()->getStringFromFile(path2);
+        FILE*file = fopen(jsonPath.c_str(), "w");//打开文件，可写
+        if (file) {
+            fputs(filecontents.c_str(),file);//从缓存输出到文件
+            fclose(file);//关闭文件
         }
     }
-    //解析
-    string dd = FileUtils::getInstance()->getStringFromFile(jsonPath);
-    Document doc;//定义文件
-    doc.Parse<kParseDefaultFlags>(dd.c_str());
-    if (doc.HasParseError()) {
-        log("error");
-        return;
+}
+void xuanguan::Jsonjiexi()//解析文件
+{
+    fileCopy();
+    string path = FileUtils::getInstance()->getWritablePath();
+    //获取可读写路径下面charpter.json文件内容
+    string jsonPath = path+string("charpter1.json");             //拼接路径
+
+    string data = FileUtils::getInstance()->getStringFromFile(jsonPath);//从文件获取字符串
+    Document doc;                                      //文档
+    doc.Parse<kParseDefaultFlags>(data.c_str());       //解析文档
+    if (doc.HasParseError())//如果解析错误
+    {
+        log("json error!\n");//输出提示
+        return;//返回
     }
-    rapidjson::Value& gameCharpter = doc["gameCharpter"];
-    rapidjson::Value& _element = gameCharpter[0];
-    rapidjson::Value& Charpter = _element["Case"][0];
-    rapidjson::Value& isLock = Charpter["isLock"];
-//    rapidjson::Value& HightScore = Charpter["HighScore"];
-//    rapidjson::Value& case1 = Charpter["case"];
-    islock1= isLock.GetBool();
-    
-    
-    rapidjson::Value& Charpter1 = _element["Case"][1];
-    rapidjson::Value& isLock11 = Charpter1["isLock"];
-//    rapidjson::Value& HightScore1 = Charpter1["HighScore"];
-//    rapidjson::Value& case2 = Charpter1["case"];
-    islock2 = isLock11.GetBool();
-    
-    
-    rapidjson::Value& Charpter2 = _element["Case"][2];
-    rapidjson::Value& isLock12 = Charpter2["isLock"];
-//    rapidjson::Value& HightScore2 = Charpter2["HighScore"];
-//    rapidjson::Value& case3 = Charpter2["case"];
-    islock3 = isLock12.GetBool();
-    
-    
-    rapidjson::Value& Charpter3 = _element["Case"][3];
-    rapidjson::Value& isLock13 = Charpter3["isLock"];
-//    rapidjson::Value& HightScore3 = Charpter3["HighScore"];
-//    rapidjson::Value& case4 = Charpter3["case"];
-    islock4 = isLock13.GetBool();
-    
-    
-    rapidjson::Value& Charpter4 = _element["Case"][4];
-    rapidjson::Value& isLock14 = Charpter4["isLock"];
-//    rapidjson::Value& HightScore4 = Charpter4["HighScore"];
-//    rapidjson::Value& case5 = Charpter4["case"];
-    islock5 = isLock14.GetBool();
-    
-    
-    rapidjson::Value& Charpter5 = _element["Case"][5];
-    rapidjson::Value& isLock15 = Charpter5["isLock"];
-//    rapidjson::Value& HightScore5 = Charpter5["HighScore"];
-//    rapidjson::Value& case6 = Charpter5["case"];
-    islock6 = isLock15.GetBool();
-    
-}*/
+    if (doc.HasMember("gameCharpter"))//如果有gameCharpter
+    {
+        //for循环，外层循环章节数，内层循环关卡数
+        for (int i = 0; i<doc["gameCharpter"].Size();++i) {
+            rapidjson::Value& _case = doc["gameCharpter"][i]["Case"];//获取Case
+            for (int j = 0; j<_case.Size(); ++j) {
+                islock[j] = _case[j]["isLock"].GetBool();//获取关卡状态
+                cout<<islock[j]<<endl;
+            }
+        }
+    }
+}
+

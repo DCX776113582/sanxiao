@@ -5,32 +5,44 @@
         {
           "HighScore" : 0,
           "case" : 1,
-          "isLock" : false
+          "isLock" : false,
+          "score" : 1500,
+          "count" : 25
         },
         {
           "HighScore" : 0,
           "case" : 2,
-          "isLock" : true
+          "isLock" : true,
+          "score" : 1500,
+          "count" : 20
         },
         {
           "HighScore" : 0,
           "case" : 3,
-          "isLock" : true
+          "isLock" : true,
+          "score" : 2000,
+          "count" : 25
         },
         {
           "HighScore" : 0,
           "case" : 4,
-          "isLock" : true
+          "isLock" : true,
+          "score" : 2100,
+          "count" : 22
         },
         {
           "HighScore" : 0,
           "case" : 5,
-          "isLock" : true
+          "isLock" : true,
+          "score" : 5000,
+          "count" : 40
         },
         {
           "HighScore" : 0,
           "case" : 6,
-          "isLock" : true
+          "isLock" : true,
+          "score" : 1500,
+          "count" : 15
         }
       ]
     }
