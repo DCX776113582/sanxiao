@@ -37,17 +37,15 @@ USING_NS_CC;
 class xuanguan :public Layer
 {
 public:
+
     static Scene* createScene();
     bool init()override;
-//    void chushihua();
     CREATE_FUNC(xuanguan);
+    void fileCopy();//文件拷贝
+    void Jsonjiexi();//解析文件
+
 public:
-    bool islock1;
-    bool islock2;
-    bool islock3;
-    bool islock4;
-    bool islock5;
-    bool islock6;
+    bool islock[6];
     int _case;//关卡数
     int hightNum;//最高分
 };
