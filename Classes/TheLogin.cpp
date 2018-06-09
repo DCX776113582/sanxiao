@@ -35,8 +35,7 @@ bool TheLogin::init()
          chunk.size = 0;
          CURL *curl = curl_easy_init();
          if (curl) {
-             curl_easy_setopt(curl,CURLOPT_URL,"http://123.56.50.222:8050/userLogin");
-//         const char* postData = "{email:7761135821@qq.com,password:123456,phoneIdentity:17338142267}";
+             curl_easy_setopt(curl,CURLOPT_URL,"http://服务器地址/userLogin");
              string str1 = "{email:"+textd1->getString()+",password:"+textd2->getString()+",phoneIdentity:"+textd3->getString()+"}";
              const char * postData = str1.data();
              curl_easy_setopt(curl,CURLOPT_POSTFIELDS,postData);
@@ -77,8 +76,7 @@ bool TheLogin::init()
         chunk.size = 0;
         CURL *curl = curl_easy_init();
         if (curl) {
-            string str1 = "http://123.56.50.222:8050/userRegister?email="+textd1->getString()+"&password="+textd2->getString()+"&phoneIdentity="+textd3->getString();
-//            curl_easy_setopt(curl,CURLOPT_URL,"http://123.56.50.222:8050/userRegister?email=7761135821@qq.com&password=123456&phoneIdentity=17338142267");
+            string str1 = "http://服务器地址/userRegister?email="+textd1->getString()+"&password="+textd2->getString()+"&phoneIdentity="+textd3->getString();
             curl_easy_setopt(curl,CURLOPT_URL,str1.c_str());
             curl_easy_setopt(curl,CURLOPT_WRITEDATA, (void*)&chunk);
             curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,WritrMemoryCallback);
